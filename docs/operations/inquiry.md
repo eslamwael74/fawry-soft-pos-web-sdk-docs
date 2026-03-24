@@ -1,0 +1,80 @@
+---
+title: Inquiry
+parent: Operations
+nav_order: 4
+---
+
+# Transaction Inquiry
+
+Query the status of a previous transaction by its ID.
+
+---
+
+## Example
+
+```javascript
+var sid = FawrySDK.generateSessionId();
+var clientTimeStamp = Date.now();
+
+var sigResponse = await fetch('/api/generate-signature', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+        merchantAccountNumber: 'YOUR_ACCOUNT_NUMBER',
+        sid: sid,
+        clientTimeStamp: clientTimeStamp,
+    }),
+});
+var sigData = await sigResponse.json();
+
+try {
+    var result = await FawrySDK.requestInquiry()
+        .setIdType(FawrySDK.IdType.FCRN)
+        .setTransactionId('THE_FCRN_TO_LOOKUP')
+        .setSignature(sigData.signature)
+        .setSid(sid)
+        .setClientTimeStamp(clientTimeStamp)
+        .setPartnerCode('YOUR_PARTNER_CODE')
+        .setMerchantAccountNumber('YOUR_ACCOUNT_NUMBER')
+        .send();
+
+    if (result.isSuccess()) {
+        console.log('Transaction found:', result.body);
+    }
+} catch (error) {
+    console.error('Inquiry failed:', error.message);
+}
+```
+
+---
+
+## Parameters
+
+| Parameter | Method | Required | Description |
+|-----------|--------|----------|-------------|
+| ID Type | `setIdType()` | **Yes** | How to look up the transaction (see below) |
+| Transaction ID | `setTransactionId()` | No | The ID value to search for |
+| From Date | `setFromDate()` | No | Start date filter |
+| To Date | `setToDate()` | No | End date filter |
+
+Plus all [common builder methods]({% link api-reference.md %}#common-methods-all-builders) (signature, sid, timestamp, etc.).
+
+---
+
+## ID Types
+
+Use `FawrySDK.IdType` to specify how to look up the transaction:
+
+| Constant | Value | Description |
+|----------|-------|-------------|
+| `IdType.FCRN` | `'FCRN'` | Look up by Fawry Cash Register Number |
+| `IdType.CORRUID` | `'CORRUID'` | Look up by Correlation UUID |
+| `IdType.ORDER_ID` | `'ORDER_ID'` | Look up by your order ID |
+
+```javascript
+// Look up by FCRN
+builder.setIdType(FawrySDK.IdType.FCRN).setTransactionId('123456789');
+
+// Look up by your order ID
+builder.setIdType(FawrySDK.IdType.ORDER_ID).setTransactionId('ORD-12345');
+```
