@@ -8,7 +8,7 @@ nav_order: 2
 
 Refund a previously completed card transaction.
 
-> **Amount:** For refunds, the same rule applies as for [Card Sale]({% link sale.md %}): use a **string** for `amount` so the value sent to your signature API uses the **exact same characters** (including decimal places and fractional padding) as `setAmount()`. That way the computed signature matches the refund payload built by the SDK.
+> **Amount:** For refunds, the same rule applies as for [Card Sale]({% link operations/sale.md %}): use a **string** for `amount` so the value sent to your signature API uses the **exact same characters** (including decimal places and fractional padding) as `setAmount()`. That way the computed signature matches the refund payload built by the SDK.
 
 ---
 
