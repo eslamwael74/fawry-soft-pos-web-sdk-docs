@@ -13,19 +13,19 @@ Integrate card payments into your website using the Fawry SoftPOS Android app. T
 ## How It Works
 
 ```
-┌──────────────┐     deep link      ┌────────────────┐     response      ┌──────────────┐
-│  Your Website │ ──────────────────▶ │  SoftPOS App   │ ─────────────────▶ │ Callback Page│
+┌───────────────┐     deep link      ┌────────────────┐     response       ┌──────────────┐
+│  Your Website │ ─────────────────▶ │  SoftPOS App   │ ─────────────────▶ │ Callback Page│
 │  (SDK loaded) │                    │  (Android)     │                    │ (SDK loaded) │
-└──────┬───────┘                    └────────────────┘                    └──────┬───────┘
-       │                                                                         │
-       │  1. Build request                                              3. Parse result
-       │  2. Generate deep link                                         4. Store in localStorage
-       │                                                                5. Original tab picks it up
-       ▼                                                                         ▼
-┌──────────────┐                                                        ┌──────────────┐
-│ Your Backend │  POST /api/generate-signature                          │ Payment Result│
-│ (signature)  │  ◀──── called before step 1                           │ (resolved)    │
-└──────────────┘                                                        └──────────────┘
+└──────┬────────┘                    └────────────────┘                    └──────┬───────┘
+       │                                                                          │
+       │  1. Build request                                               3. Parse result
+       │  2. Generate deep link                                          4. Store in localStorage
+       │                                                                 5. Original tab picks it up
+       ▼                                                                          ▼
+┌──────────────┐                                                           ┌───────────────┐
+│ Your Backend │  POST /api/generate-signature                             │ Payment Result│
+│ (signature)  │  ◀──── called before step 1                               │ (resolved)    │
+└──────────────┘                                                           └───────────────┘
 ```
 
 1. Your website calls your **backend** to generate a signature.
