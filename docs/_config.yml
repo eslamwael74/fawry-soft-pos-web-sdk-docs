@@ -22,6 +22,12 @@ footer_content: "&copy; Fawry Payment Solutions. All rights reserved."
 
 nav_sort: case_insensitive
 
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: "default"
+
 exclude:
   - node_modules/
   - vendor/
