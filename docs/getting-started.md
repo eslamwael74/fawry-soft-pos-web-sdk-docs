@@ -89,17 +89,20 @@ if (typeof FawrySDK !== 'undefined') {
 
 ## Step 4: Make a Payment
 
+Use the **same string** for `amount` in your signature request and in `setAmount()` (see [Card Sale]({% link operations/sale.md %}) for why).
+
 ```javascript
 // 1. Generate a session ID
 var sid = FawrySDK.generateSessionId();
 var clientTimeStamp = Date.now();
+var amountStr = '100.00';
 
 // 2. Get a signature from your backend
 var response = await fetch('/api/generate-signature', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-        amount: '100.00',
+        amount: amountStr,
         merchantAccountNumber: 'YOUR_ACCOUNT_NUMBER',
         orderId: 'ORDER-001',
         sid: sid,
@@ -110,7 +113,7 @@ var data = await response.json();
 
 // 3. Build and send the payment request
 var result = await FawrySDK.requestSale(FawrySDK.PaymentOptionType.CARD)
-    .setAmount(100.00)
+    .setAmount(amountStr)
     .setCurrency('EGP')
     .setSignature(data.signature)
     .setSid(sid)
@@ -118,6 +121,7 @@ var result = await FawrySDK.requestSale(FawrySDK.PaymentOptionType.CARD)
     .setPartnerCode('YOUR_PARTNER_CODE')
     .setMerchantAccountNumber('YOUR_ACCOUNT_NUMBER')
     .setOrderId('ORDER-001')
+    .setBtc(99901)
     .send();
 
 // 4. Handle the result
@@ -127,6 +131,8 @@ if (result.isSuccess()) {
     console.log('Payment failed:', result.header.status.statusDesc);
 }
 ```
+
+`setCurrency()` is optional; if you do not call it, the SDK defaults the currency to **`EGP`**. Use `.setCurrency('EGP')` (or another code) when you need a non-default currency.
 
 ---
 
@@ -165,6 +171,20 @@ Create a `callback.html` page that loads the SDK. The SDK **automatically** hand
 </body>
 </html>
 ```
+
+---
+
+## Remote diagnostics (optional)
+
+To send SDK diagnostics to your own server, configure the full log endpoint URL once at startup. If you do not call this, **no** remote logging requests are made.
+
+```javascript
+FawrySDK.configureLogging({
+    logApiUrl: 'https://your-domain.com/api/fawry-log'
+});
+```
+
+The SDK sends `POST` requests with JSON body `{ message, data }` to that URL.
 
 ---
 

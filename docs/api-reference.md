@@ -28,6 +28,24 @@ var sid = FawrySDK.generateSessionId();
 
 ---
 
+#### `FawrySDK.configureLogging(options)`
+
+Configure optional remote diagnostics. If `logApiUrl` is omitted, empty, or never set, the SDK **does not** send any log HTTP requests.
+
+```javascript
+FawrySDK.configureLogging({
+    logApiUrl: 'https://your-domain.com/api/fawry-log'
+});
+```
+
+**Parameters:**
+
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `logApiUrl` | `string` \| `null` | No | Full URL for `POST` requests with JSON `{ message, data }` |
+
+---
+
 #### `FawrySDK.requestSale(paymentOptionType)`
 
 Create a builder for a card sale (purchase) request.
@@ -138,9 +156,9 @@ These methods are available on every builder:
 | `.setCallbackUrl(value)` | `string` | No | Custom callback URL (defaults to `{origin}/callback.html`) |
 | `.setAccountNumber(value)` | `string` | No | Alternative to `setMerchantAccountNumber` |
 | `.setMerchantToken(value)` | `string` | No | Merchant token |
-| `.setBtc(value)` | `number` | No | Business transaction code (default: `99901`) |
-| `.setPrintReceipt(value)` | `boolean` | No | Print receipt on terminal (default: `true`) |
-| `.setDisplayInvoice(value)` | `boolean` | No | Display invoice on terminal (default: `true`) |
+| `.setBtc(value)` | `number` | **Yes** | Business transaction code (from Fawry; no SDK default) |
+| `.setPrintReceipt(value)` | `boolean` | No | Print receipt on terminal (default: `false`) |
+| `.setDisplayInvoice(value)` | `boolean` | No | Display invoice on terminal (default: `false`) |
 | `.setExtras(value)` | `object` | No | Extra info key-value pairs |
 | `.send()` | -- | -- | Execute the request. Returns `Promise<PaymentResult>` |
 
@@ -154,8 +172,8 @@ Created via `FawrySDK.requestSale(PaymentOptionType.CARD)`.
 
 | Method | Type | Required | Description |
 |--------|------|----------|-------------|
-| `.setAmount(value)` | `number` | **Yes** | Payment amount |
-| `.setCurrency(value)` | `string` | No | Currency code (default: `'EGP'`) |
+| `.setAmount(value)` | `string` | **Yes** | Payment amount (use the **same string** as for signature generation) |
+| `.setCurrency(value)` | `string` | No | Currency code (default: `'EGP'` if omitted) |
 | `.setOrderId(value)` | `string` | No | Your order/reference ID |
 | `.setTips(value)` | `number` | No | Tips amount |
 | `.setPromoCode(value)` | `string` | No | Promotional code |
@@ -176,7 +194,7 @@ Created via `FawrySDK.requestRefund(PaymentOptionType.CARD)`.
 
 | Method | Type | Required | Description |
 |--------|------|----------|-------------|
-| `.setAmount(value)` | `number` | **Yes** | Refund amount |
+| `.setAmount(value)` | `string` | **Yes** | Refund amount (same string as for signature) |
 | `.setTransactionFCRN(value)` | `string` | No | Original transaction FCRN |
 | `.setOrderId(value)` | `string` | No | Order/reference ID |
 | `.setSplitPayment(value)` | `boolean` | No | Enable split payment |
@@ -222,8 +240,8 @@ Created via `FawrySDK.requestClearCache()`.
 
 | Method | Type | Required | Description |
 |--------|------|----------|-------------|
-| `.setClearSecurityKeys(value)` | `boolean` | No | Clear security keys (default: `true`) |
-| `.setClearProfile(value)` | `boolean` | No | Clear profile data (default: `true`) |
+| `.setClearSecurityKeys(value)` | `boolean` | **Yes** | Clear security keys (`true` or `false`) |
+| `.setClearProfile(value)` | `boolean` | **Yes** | Clear profile data (`true` or `false`) |
 
 ---
 

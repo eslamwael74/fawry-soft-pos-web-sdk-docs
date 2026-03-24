@@ -31,11 +31,13 @@ signature = part1 + "///" + part2
 | `merchantToken` | Your secret merchant token (server-side only) |
 | `accountNumber` | Your merchant account number |
 
+**Why `amount` must be a string:** The two hash inputs are built by **concatenating** `clientTimeStamp`, `sid`, `amount`, and `referenceNumber` as text. The signature only matches if the **exact same character sequence** is used on the server as in the SDK. Numeric types can change how a value is rendered (for example `100` versus `100.00`, or different fractional precision), which would change the hash. Passing `amount` as a **string** end-to-end keeps one fixed representation—including the decimal places and padding you intend—so the backend signature and the client payment request stay aligned.
+
 ---
 
-## Node.js Implementation
+## Node.js (signature steps)
 
-### Signature Generation Function
+Below is a minimal illustration of the **hashing and concatenation** only. Your service should still validate `amount`, `accountNumber`, `sid`, and `clientTimeStamp` from the client before calling this.
 
 ```javascript
 const crypto = require('crypto');
@@ -46,70 +48,81 @@ function hash256(message) {
     return crypto.createHash('sha256').update(message).digest('hex');
 }
 
-function generatePaymentSignature(options) {
-    const amount = options.amount != null ? String(options.amount) : '';
-    const accountNumber = options.accountNumber || options.merchantAccountNumber || '';
-    const sid = options.sid;
-    const clientTimeStamp = options.clientTimeStamp || Date.now();
-    const referenceNumber = options.orderId || '';
-    const token = options.merchantToken || MERCHANT_TOKEN;
+const UUID_V4_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-    var part1 = hash256(
-        clientTimeStamp + sid + amount + referenceNumber
-    );
+function calculateSignature(clientTimeStamp, sid, amount, referenceNumber, accountNumber, merchantToken) {
+    if (typeof sid !== 'string' || !UUID_V4_REGEX.test(sid)) {
+        throw new Error('sid must be a valid GUID (UUID v4)');
+    }
+    const amountPart = (amount == null || amount === '' || amount === 'undefined') ? '' : String(amount);
+    const token = merchantToken || MERCHANT_TOKEN;
+    const ref = referenceNumber || '';
 
-    var part2 = hash256(
-        clientTimeStamp + token + accountNumber + amount + referenceNumber
-    );
-
-    return {
-        signature: part1 + '///' + part2,
-        sid: sid,
-        clientTimeStamp: clientTimeStamp,
-    };
+    const part1 = hash256(`${clientTimeStamp}${sid}${amountPart}${ref}`);
+    const part2 = hash256(`${clientTimeStamp}${token}${accountNumber}${amountPart}${ref}`);
+    return `${part1}///${part2}`;
 }
 ```
 
-### Express Server Example
+### Express server example
+
+Validate the request body, then call `calculateSignature` with the same `sid` and `clientTimeStamp` the client used for the request.
 
 ```javascript
 const express = require('express');
 const cors = require('cors');
+const { calculateSignature } = require('./signature-hint'); // your module implementing the functions above
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
 app.post('/api/generate-signature', (req, res) => {
-    const { amount, merchantAccountNumber, orderId, sid, clientTimeStamp } = req.body;
+    const data = req.body;
+    const amountStr = typeof data.amount === 'string' ? data.amount : String(data.amount);
+    const amountNum = parseFloat(amountStr);
+    if (amountStr && amountNum <= 0) {
+        return res.status(400).json({ error: 'Invalid amount: amount must be greater than 0' });
+    }
 
-    // Validate required fields
-    if (!sid) return res.status(400).json({ error: 'sid is required' });
-    if (clientTimeStamp == null) return res.status(400).json({ error: 'clientTimeStamp is required' });
-    if (!merchantAccountNumber) return res.status(400).json({ error: 'merchantAccountNumber is required' });
+    const accountNumber = data.merchantAccountNumber || data.accountNumber;
+    if (!accountNumber) {
+        return res.status(400).json({ error: 'merchantAccountNumber or accountNumber is required' });
+    }
+    if (data.sid == null || data.sid === '') {
+        return res.status(400).json({ error: 'sid is required (client-generated session ID)' });
+    }
+    if (data.clientTimeStamp == null) {
+        return res.status(400).json({ error: 'clientTimeStamp is required (client-generated timestamp)' });
+    }
 
-    const result = generatePaymentSignature({
-        amount: amount ? String(amount) : '',
-        merchantAccountNumber,
-        orderId,
-        sid,
-        clientTimeStamp,
-    });
-
-    res.json({ signature: result.signature });
+    try {
+        const signature = calculateSignature(
+            data.clientTimeStamp,
+            data.sid,
+            amountStr,
+            data.orderId || '',
+            accountNumber,
+            data.merchantToken || null
+        );
+        res.json({ signature });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 });
 
-app.listen(3001, () => {
-    console.log('Signature server running on http://localhost:3001');
+app.listen(process.env.PORT || 3001, () => {
+    console.log('Signature server running on http://localhost:' + (process.env.PORT || 3001));
 });
 ```
 
-### Standalone HTTP Server (No Express)
+### Standalone HTTP server (no Express)
 
-A zero-dependency Node.js server is included in the SDK repository at `server-side/node/server.js`. It exposes a single endpoint:
+A zero-dependency Node.js server ships at [server-side/node/server.js](../../server-side/node/server.js). It uses a shared library and exposes:
 
 ```
 POST /api/generate-signature
+GET  / or GET /health
 ```
 
 **Request body:**
@@ -132,7 +145,7 @@ POST /api/generate-signature
 }
 ```
 
-Run it with:
+Run:
 
 ```bash
 cd server-side/node
@@ -142,9 +155,58 @@ MERCHANT_TOKEN=your-token node server.js
 
 ---
 
-## Python Implementation
+## Python (signature steps)
 
-A Python implementation is also available at `server-side/python/server.py`:
+Minimal illustration of the same **hashing and concatenation**. Validate inputs in your HTTP handler before calling `calculate_signature`.
+
+```python
+import hashlib
+import os
+import uuid
+from typing import Optional
+
+MERCHANT_TOKEN = os.environ.get("MERCHANT_TOKEN", "your-merchant-token")
+
+
+def hash256(message: str) -> str:
+    return hashlib.sha256(message.encode("utf-8")).hexdigest()
+
+
+def _is_valid_uuid4(value: str) -> bool:
+    if not value or not isinstance(value, str):
+        return False
+    try:
+        u = uuid.UUID(value)
+        return u.version == 4
+    except (ValueError, AttributeError):
+        return False
+
+
+def calculate_signature(
+    client_time_stamp,
+    sid: str,
+    amount: str,
+    reference_number: str,
+    account_number: str,
+    merchant_token: Optional[str] = None,
+) -> str:
+    if not _is_valid_uuid4(sid):
+        raise ValueError("sid must be a valid GUID (UUID v4)")
+    amount_part = (
+        ""
+        if amount is None or amount == "" or amount in ("undefined", "None")
+        else (amount if isinstance(amount, str) else str(amount))
+    )
+    token = merchant_token or MERCHANT_TOKEN
+    ref = reference_number or ""
+    part1 = hash256(f"{client_time_stamp}{sid}{amount_part}{ref}")
+    part2 = hash256(f"{client_time_stamp}{token}{account_number}{amount_part}{ref}")
+    return f"{part1}///{part2}"
+```
+
+### Run the Python HTTP server
+
+The repo includes a full HTTP server that uses the same library:
 
 ```bash
 cd server-side/python
@@ -152,7 +214,7 @@ pip install -r requirements.txt
 MERCHANT_TOKEN=your-token python server.py
 ```
 
-The API is identical: `POST /api/generate-signature` with the same request/response format.
+`POST /api/generate-signature` uses the same JSON body and returns `{ "signature": "..." }`.
 
 ---
 
@@ -160,8 +222,8 @@ The API is identical: `POST /api/generate-signature` with the same request/respo
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `MERCHANT_TOKEN` | (built-in demo token) | Your secret merchant token |
-| `PORT` | `3001` | Server port |
+| `MERCHANT_TOKEN` | (use env in production) | Your secret merchant token |
+| `PORT` | `3001` (Node) / see Python server | HTTP server port |
 
 {: .important }
 > In production, always set `MERCHANT_TOKEN` via environment variable or a secrets manager. Never commit your real token to source control.

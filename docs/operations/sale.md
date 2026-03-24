@@ -8,6 +8,10 @@ nav_order: 1
 
 Accept a card payment through the SoftPOS app.
 
+> **Amount and signature:** The goal of using a **string** for the amount is to keep the **same decimal representation** everywhere—how many fractional digits you use and how they are padded (for example `'100.00'` vs `'100.0'` vs `100`)—because the backend builds the signature from **plain string concatenation**. If the characters differ from what `setAmount()` puts in the deep link, the hash will not match. Pass the payment amount as a string (for example `'150.00'`) to `setAmount()`, and use the **identical string** in the JSON body for signature generation. Avoid passing a JavaScript number when the string form could differ after formatting.
+
+> **Currency:** `setCurrency()` is optional. If you omit it, the SDK sends **`EGP`** as the currency in the payment payload.
+
 ---
 
 ## Basic Example
@@ -16,13 +20,14 @@ Accept a card payment through the SoftPOS app.
 // 1. Generate session ID and timestamp
 var sid = FawrySDK.generateSessionId();
 var clientTimeStamp = Date.now();
+var amountStr = '150.00';
 
 // 2. Get signature from your backend
 var sigResponse = await fetch('/api/generate-signature', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-        amount: '150.00',
+        amount: amountStr,
         merchantAccountNumber: 'YOUR_ACCOUNT_NUMBER',
         orderId: 'ORD-12345',
         sid: sid,
@@ -34,7 +39,7 @@ var sigData = await sigResponse.json();
 // 3. Build and send payment request
 try {
     var result = await FawrySDK.requestSale(FawrySDK.PaymentOptionType.CARD)
-        .setAmount(150.00)
+        .setAmount(amountStr)
         .setCurrency('EGP')
         .setSignature(sigData.signature)
         .setSid(sid)
@@ -42,6 +47,7 @@ try {
         .setPartnerCode('YOUR_PARTNER_CODE')
         .setMerchantAccountNumber('YOUR_ACCOUNT_NUMBER')
         .setOrderId('ORD-12345')
+        .setBtc(99901)
         .send();
 
     // Payment successful
@@ -60,22 +66,23 @@ try {
 ```javascript
 var result = await FawrySDK.requestSale(FawrySDK.PaymentOptionType.CARD)
     // Required
-    .setAmount(250.00)
+    .setAmount('250.00')
+    .setCurrency('EGP')
     .setSignature(signatureFromBackend)
     .setSid(sid)
     .setClientTimeStamp(clientTimeStamp)
     .setPartnerCode('100')
     .setMerchantAccountNumber('ACCT-001')
+    .setBtc(99901)
 
-    // Optional
-    .setCurrency('EGP')
+    // Optional (printReceipt / displayInvoice default to false if omitted)
+    .setPrintReceipt(true)
+    .setDisplayInvoice(true)
     .setOrderId('ORD-67890')
     .setTips(10.00)
     .setPromoCode('PROMO2024')
     .setReceiptNumber('REC-001')
     .setSplitPayment(false)
-    .setPrintReceipt(true)
-    .setDisplayInvoice(true)
     .setMetadata({ customField: 'value' })
     .setExtras({ note: 'VIP customer' })
     .send();
@@ -87,12 +94,68 @@ var result = await FawrySDK.requestSale(FawrySDK.PaymentOptionType.CARD)
 
 | Parameter | Method | Description |
 |-----------|--------|-------------|
-| Amount | `setAmount()` | Payment amount (number) |
+| Amount | `setAmount()` | Payment amount as a **string** (same value as in signature request) |
+| Bill type code | `setBtc()` | Business transaction code from Fawry |
 | Signature | `setSignature()` | Server-generated signature |
 | Session ID | `setSid()` | From `FawrySDK.generateSessionId()` |
 | Timestamp | `setClientTimeStamp()` | `Date.now()` |
 | Partner Code | `setPartnerCode()` | Your Fawry partner code |
 | Account Number | `setMerchantAccountNumber()` | Your merchant account number |
+
+**Optional:** `setCurrency('EGP')` — if you omit it, currency defaults to **`EGP`**.
+
+**Optional (default `false`):** `setPrintReceipt(true|false)` and `setDisplayInvoice(true|false)` — if you omit them, both are **`false`**.
+
+---
+
+## Example successful response
+
+The SoftPOS app returns JSON in the callback URL. After parsing, the SDK exposes the same shape on `result`. A minimal successful purchase payload looks like this:
+
+```json
+{
+  "header": {
+    "messageCode": "purchase",
+    "status": {
+      "statusCode": 1,
+      "statusDesc": "success",
+      "hostStatusCode": 0,
+      "hostStatusDesc": "Approved"
+    }
+  },
+  "body": {
+    "fcrn": "FCRN123456789",
+    "amount": "150.00",
+    "currency": "EGP",
+    "receiptInfo": {
+      "authId": "AUTH123456",
+      "cardInfo": {
+        "primaryAccountNumber": "****1234",
+        "appName": "VISA"
+      }
+    }
+  }
+}
+```
+
+---
+
+## Example failed response
+
+```json
+{
+  "header": {
+    "messageCode": "purchase",
+    "status": {
+      "statusCode": 0,
+      "statusDesc": "failed",
+      "hostStatusCode": 5,
+      "hostStatusDesc": "Declined"
+    }
+  },
+  "body": {}
+}
+```
 
 ---
 

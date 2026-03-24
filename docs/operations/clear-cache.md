@@ -36,6 +36,7 @@ try {
         .setClientTimeStamp(clientTimeStamp)
         .setPartnerCode('YOUR_PARTNER_CODE')
         .setMerchantAccountNumber('YOUR_ACCOUNT_NUMBER')
+        .setBtc(99901)
         .send();
 
     if (result.isSuccess()) {
@@ -50,9 +51,26 @@ try {
 
 ## Parameters
 
-| Parameter | Method | Required | Default | Description |
-|-----------|--------|----------|---------|-------------|
-| Clear Security Keys | `setClearSecurityKeys()` | No | `true` | Clear stored security keys |
-| Clear Profile | `setClearProfile()` | No | `true` | Clear stored profile data |
+| Parameter | Method | Required | Description |
+|-----------|--------|----------|-------------|
+| Clear Security Keys | `setClearSecurityKeys()` | **Yes** | Pass `true` or `false` |
+| Clear Profile | `setClearProfile()` | **Yes** | Pass `true` or `false` |
 
-Plus all [common builder methods]({% link api-reference.md %}#common-methods-all-builders) (signature, sid, timestamp, etc.).
+Plus all [common builder methods]({% link api-reference.md %}#common-methods-all-builders) (signature, sid, timestamp, `setBtc`, optional `setPrintReceipt` / `setDisplayInvoice` — default `false`, etc.).
+
+---
+
+## Example successful response
+
+```json
+{
+  "header": {
+    "messageCode": "clearCache",
+    "status": {
+      "statusCode": 1,
+      "statusDesc": "success"
+    }
+  },
+  "body": {}
+}
+```

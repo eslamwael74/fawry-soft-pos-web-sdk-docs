@@ -8,6 +8,8 @@ nav_order: 2
 
 Refund a previously completed card transaction.
 
+> **Amount:** For refunds, the same rule applies as for [Card Sale]({% link sale.md %}): use a **string** for `amount` so the value sent to your signature API uses the **exact same characters** (including decimal places and fractional padding) as `setAmount()`. That way the computed signature matches the refund payload built by the SDK.
+
 ---
 
 ## Example
@@ -15,13 +17,14 @@ Refund a previously completed card transaction.
 ```javascript
 var sid = FawrySDK.generateSessionId();
 var clientTimeStamp = Date.now();
+var amountStr = '150.00';
 
 // Get signature from your backend (amount is required for refund signature)
 var sigResponse = await fetch('/api/generate-signature', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-        amount: '150.00',
+        amount: amountStr,
         merchantAccountNumber: 'YOUR_ACCOUNT_NUMBER',
         sid: sid,
         clientTimeStamp: clientTimeStamp,
@@ -31,13 +34,14 @@ var sigData = await sigResponse.json();
 
 try {
     var result = await FawrySDK.requestRefund(FawrySDK.PaymentOptionType.CARD)
-        .setAmount(150.00)
+        .setAmount(amountStr)
         .setTransactionFCRN('ORIGINAL_FCRN_HERE')
         .setSignature(sigData.signature)
         .setSid(sid)
         .setClientTimeStamp(clientTimeStamp)
         .setPartnerCode('YOUR_PARTNER_CODE')
         .setMerchantAccountNumber('YOUR_ACCOUNT_NUMBER')
+        .setBtc(99902)
         .send();
 
     if (result.isSuccess()) {
@@ -54,13 +58,54 @@ try {
 
 | Parameter | Method | Required | Description |
 |-----------|--------|----------|-------------|
-| Amount | `setAmount()` | **Yes** | Refund amount |
+| Amount | `setAmount()` | **Yes** | Refund amount as a **string** (same as for signature) |
 | Transaction FCRN | `setTransactionFCRN()` | No | FCRN of the original transaction |
 | Order ID | `setOrderId()` | No | Order/reference ID |
 | Split Payment | `setSplitPayment()` | No | Enable split payment refund |
 | Chain UID | `setChainUID()` | No | Chain UID for split payments |
 
-Plus all [common builder methods]({% link api-reference.md %}#common-methods-all-builders) (signature, sid, timestamp, etc.).
+Plus all [common builder methods]({% link api-reference.md %}#common-methods-all-builders) (signature, sid, timestamp, `setBtc`, optional `setPrintReceipt` / `setDisplayInvoice` — default `false`, etc.).
+
+---
+
+## Example successful response
+
+```json
+{
+  "header": {
+    "messageCode": "refund",
+    "status": {
+      "statusCode": 1,
+      "statusDesc": "success",
+      "hostStatusCode": 0,
+      "hostStatusDesc": "Approved"
+    }
+  },
+  "body": {
+    "fcrn": "FCRN-REFUND-001",
+    "amount": "150.00",
+    "currency": "EGP"
+  }
+}
+```
+
+---
+
+## Example failed response
+
+```json
+{
+  "header": {
+    "messageCode": "refund",
+    "status": {
+      "statusCode": 0,
+      "statusDesc": "failed",
+      "hostStatusDesc": "Refund not allowed"
+    }
+  },
+  "body": {}
+}
+```
 
 ---
 
@@ -68,3 +113,4 @@ Plus all [common builder methods]({% link api-reference.md %}#common-methods-all
 
 - The refund amount should match or be less than the original transaction amount.
 - Use the `transactionFCRN` from the original sale's `result.body.fcrn` to link the refund to the correct transaction.
+- Use the bill type code (`setBtc`) required by Fawry for your refund flow (example value `99902` is illustrative only).

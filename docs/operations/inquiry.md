@@ -36,6 +36,7 @@ try {
         .setClientTimeStamp(clientTimeStamp)
         .setPartnerCode('YOUR_PARTNER_CODE')
         .setMerchantAccountNumber('YOUR_ACCOUNT_NUMBER')
+        .setBtc(99901)
         .send();
 
     if (result.isSuccess()) {
@@ -57,7 +58,7 @@ try {
 | From Date | `setFromDate()` | No | Start date filter |
 | To Date | `setToDate()` | No | End date filter |
 
-Plus all [common builder methods]({% link api-reference.md %}#common-methods-all-builders) (signature, sid, timestamp, etc.).
+Plus all [common builder methods]({% link api-reference.md %}#common-methods-all-builders) (signature, sid, timestamp, `setBtc`, optional `setPrintReceipt` / `setDisplayInvoice` — default `false`, etc.).
 
 ---
 
@@ -66,7 +67,7 @@ Plus all [common builder methods]({% link api-reference.md %}#common-methods-all
 Use `FawrySDK.IdType` to specify how to look up the transaction:
 
 | Constant | Value | Description |
-|----------|-------|-------------|
+|----------|-------|---------------|
 | `IdType.FCRN` | `'FCRN'` | Look up by Fawry Cash Register Number |
 | `IdType.CORRUID` | `'CORRUID'` | Look up by Correlation UUID |
 | `IdType.ORDER_ID` | `'ORDER_ID'` | Look up by your order ID |
@@ -77,4 +78,45 @@ builder.setIdType(FawrySDK.IdType.FCRN).setTransactionId('123456789');
 
 // Look up by your order ID
 builder.setIdType(FawrySDK.IdType.ORDER_ID).setTransactionId('ORD-12345');
+```
+
+---
+
+## Example successful response
+
+```json
+{
+  "header": {
+    "messageCode": "inquiry",
+    "status": {
+      "statusCode": 1,
+      "statusDesc": "success",
+      "hostStatusDesc": "Found"
+    }
+  },
+  "body": {
+    "fcrn": "123456789",
+    "amount": "100.00",
+    "currency": "EGP",
+    "transactionType": "purchase"
+  }
+}
+```
+
+---
+
+## Example failed response
+
+```json
+{
+  "header": {
+    "messageCode": "inquiry",
+    "status": {
+      "statusCode": 0,
+      "statusDesc": "failed",
+      "hostStatusDesc": "Transaction not found"
+    }
+  },
+  "body": {}
+}
 ```

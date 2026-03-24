@@ -36,6 +36,7 @@ try {
         .setClientTimeStamp(clientTimeStamp)
         .setPartnerCode('YOUR_PARTNER_CODE')
         .setMerchantAccountNumber('YOUR_ACCOUNT_NUMBER')
+        .setBtc(99901)
         .send();
 
     if (result.isSuccess()) {
@@ -57,11 +58,11 @@ try {
 | Split Payment | `setSplitPayment()` | No | Enable split payment void |
 | Chain UID | `setChainUID()` | No | Chain UID for split payments |
 
-Plus all [common builder methods]({% link api-reference.md %}#common-methods-all-builders) (signature, sid, timestamp, etc.).
+Plus all [common builder methods]({% link api-reference.md %}#common-methods-all-builders) (signature, sid, timestamp, `setBtc`, optional `setPrintReceipt` / `setDisplayInvoice` — default `false`, etc.).
 
 ---
 
-## Successful Void
+## Successful void
 
 A successful void returns `statusCode: 3` (REVERSED), which `result.isSuccess()` recognizes as success.
 
@@ -69,4 +70,43 @@ A successful void returns `statusCode: 3` (REVERSED), which `result.isSuccess()`
 result.isSuccess()                    // true when statusCode is 1 or 3
 result.header.status.statusCode       // 3 (REVERSED)
 result.header.status.statusDesc       // 'reversed'
+```
+
+---
+
+## Example successful response
+
+```json
+{
+  "header": {
+    "messageCode": "void",
+    "status": {
+      "statusCode": 3,
+      "statusDesc": "reversed",
+      "hostStatusCode": 0,
+      "hostStatusDesc": "Voided"
+    }
+  },
+  "body": {
+    "fcrn": "FCRN-VOID-001"
+  }
+}
+```
+
+---
+
+## Example failed response
+
+```json
+{
+  "header": {
+    "messageCode": "void",
+    "status": {
+      "statusCode": 0,
+      "statusDesc": "failed",
+      "hostStatusDesc": "Void not allowed"
+    }
+  },
+  "body": {}
+}
 ```
