@@ -32,31 +32,46 @@ Create a `callback.html` file in your site root:
     <title>Payment Result</title>
 </head>
 <body>
-    <div id="status">Processing payment result...</div>
+    <div id="loading">Processing...</div>
+    <div id="result" style="display:none;"></div>
 
     <script src="node_modules/fawry-softpos-sdk/dist/fawry-softpos-sdk.js"></script>
     <script>
         FawrySDK.handleCallback().then(function(result) {
-            var statusEl = document.getElementById('status');
+            var loadingEl = document.getElementById('loading');
+            var resultEl = document.getElementById('result');
+
+            loadingEl.style.display = 'none';
+            resultEl.style.display = 'block';
 
             if (result.isSuccess()) {
-                statusEl.textContent = 'Payment successful!';
-                statusEl.style.color = 'green';
-
-                // Display transaction details
-                console.log('FCRN:', result.body.fcrn);
-                console.log('Amount:', result.body.amount);
-                console.log('Currency:', result.body.currency);
+                resultEl.textContent = 'Successful!';
+                resultEl.style.color = 'green';
             } else {
-                statusEl.textContent = 'Payment failed: '
+                resultEl.textContent = 'Failed: '
                     + (result.header.status.hostStatusDesc || result.header.status.statusDesc);
-                statusEl.style.color = 'red';
+                resultEl.style.color = 'red';
+            }
+
+            // The SDK stores the result in localStorage for cross-tab communication.
+            // If result._storedForCrossTab is true, the original tab will automatically
+            // pick up the result. You can close this page or redirect back:
+            if (result._storedForCrossTab) {
+                setTimeout(function() {
+                    window.close();
+                    // If window.close() doesn't work, redirect to your main page:
+                    setTimeout(function() {
+                        window.location.replace('/index.html');
+                    }, 100);
+                }, 2000);
             }
         });
     </script>
 </body>
 </html>
 ```
+
+The callback page detects the operation type from the response (`purchase`, `refund`, `void`, `inquiry`) and can display flow-specific messages accordingly.
 
 ---
 

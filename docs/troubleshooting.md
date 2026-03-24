@@ -17,19 +17,28 @@ Common issues and their solutions.
 
 **Solutions:**
 
-1. **Build the SDK first:**
+1. **Ensure the SDK `.tgz` is installed:**
 
-   ```bash
-   cd js-sdk
-   npm install
-   npm run build
+   Verify your `package.json` references the `.tgz` file correctly:
+
+   ```json
+   {
+     "dependencies": {
+       "fawry-softpos-sdk": "file:./fawry-softpos-sdk-1.0.0.tgz"
+     }
+   }
    ```
 
-2. **Install dependencies in your site:**
+   Then run:
 
    ```bash
-   cd your-site
    npm install
+   ```
+
+2. **Verify the built file exists:**
+
+   ```bash
+   ls node_modules/fawry-softpos-sdk/dist/fawry-softpos-sdk.js
    ```
 
 3. **Verify the script path** in your HTML:

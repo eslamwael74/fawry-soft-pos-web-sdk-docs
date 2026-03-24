@@ -1,16 +1,13 @@
 title: Fawry SoftPOS Web SDK
 description: Integration guide for Fawry SoftPOS Web Payment SDK
-baseurl: "/website_payment_sdk_poc"
-url: ""
+baseurl: "/fawry-soft-pos-web-sdk"
+url: "https://eslamwael74.github.io"
 
-remote_theme: just-the-docs/just-the-docs@v0.10.0
+theme: just-the-docs
 
 color_scheme: light
 
-logo: "/assets/fawry-logo.svg"
-
 search_enabled: true
-search.button: true
 
 heading_anchors: true
 
@@ -19,14 +16,11 @@ back_to_top_text: "Back to top"
 
 aux_links:
   "View on GitHub":
-    - "https://github.com/user/website_payment_sdk_poc"
+    - "https://github.com/eslamwael74/fawry-soft-pos-web-sdk"
 
 footer_content: "&copy; Fawry Payment Solutions. All rights reserved."
 
 nav_sort: case_insensitive
-
-plugins:
-  - jekyll-remote-theme
 
 exclude:
   - node_modules/

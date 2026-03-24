@@ -22,25 +22,23 @@ Before you begin, make sure you have:
 
 ## Step 1: Install the SDK
 
-Add the SDK to your project:
+You will receive a `fawry-softpos-sdk-1.0.0.tgz` file. Place it in your project directory and add it to your `package.json`:
 
-```bash
-npm install fawry-softpos-sdk
+```json
+{
+  "dependencies": {
+    "fawry-softpos-sdk": "file:./fawry-softpos-sdk-1.0.0.tgz"
+  }
+}
 ```
 
-Or reference it locally:
+Then install:
 
 ```bash
-npm install file:../js-sdk
-```
-
-Then build the SDK (if using the local source):
-
-```bash
-cd js-sdk
 npm install
-npm run build
 ```
+
+See [Installation]({% link installation.md %}) for alternative methods.
 
 ---
 
@@ -143,15 +141,24 @@ Create a `callback.html` page that loads the SDK. The SDK **automatically** hand
     <title>Payment Result</title>
 </head>
 <body>
-    <div id="result">Processing payment result...</div>
+    <div id="loading">Processing...</div>
+    <div id="result" style="display:none;"></div>
     <script src="node_modules/fawry-softpos-sdk/dist/fawry-softpos-sdk.js"></script>
     <script>
         FawrySDK.handleCallback().then(function(result) {
+            document.getElementById('loading').style.display = 'none';
             var el = document.getElementById('result');
+            el.style.display = 'block';
+
             if (result.isSuccess()) {
-                el.textContent = 'Payment successful! FCRN: ' + result.body.fcrn;
+                el.textContent = 'Successful! FCRN: ' + result.body.fcrn;
             } else {
-                el.textContent = 'Payment failed: ' + result.header.status.statusDesc;
+                el.textContent = 'Failed: ' + (result.header.status.hostStatusDesc || result.header.status.statusDesc);
+            }
+
+            // Auto-redirect back after cross-tab result is stored
+            if (result._storedForCrossTab) {
+                setTimeout(function() { window.location.replace('/index.html'); }, 2000);
             }
         });
     </script>

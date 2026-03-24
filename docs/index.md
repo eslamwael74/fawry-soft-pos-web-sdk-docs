@@ -29,8 +29,8 @@ Integrate card payments into your website using the Fawry SoftPOS Android app. T
 ```
 
 1. Your website calls your **backend** to generate a signature.
-2. The SDK builds a `softpos://` deep link with the signed payload and redirects the browser.
-3. The SoftPOS Android app processes the payment and redirects back to your **callback page**.
+2. The SDK builds a `softpos://open/{operation}` deep link with the signed payload and redirects the browser. Each operation uses its own path: `payment`, `refund`, `void`, `inquiry`, or `clearCache`.
+3. The SoftPOS Android app processes the request and redirects back to your **callback page**.
 4. The SDK on the callback page parses the response, stores it in `localStorage`, and the original tab resolves the Promise.
 
 ---

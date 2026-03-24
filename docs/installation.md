@@ -7,46 +7,42 @@ nav_order: 3
 
 ---
 
-## Install via npm
+## Install from .tgz (recommended)
 
-```bash
-npm install fawry-softpos-sdk
-```
+The SDK is distributed as a `.tgz` tarball. You will receive a `fawry-softpos-sdk-1.0.0.tgz` file from Fawry.
 
-After installing, build the SDK bundle:
-
-```bash
-cd node_modules/fawry-softpos-sdk
-npm run build
-```
-
-This creates `dist/fawry-softpos-sdk.js` (UMD bundle).
-
----
-
-## Install from Local Source
-
-If you have the SDK source code locally (e.g., in a monorepo), reference it in your `package.json`:
+1. Place the `.tgz` file in your project or a known path.
+2. Add it to your `package.json`:
 
 ```json
 {
   "dependencies": {
-    "fawry-softpos-sdk": "file:../js-sdk"
+    "fawry-softpos-sdk": "file:./fawry-softpos-sdk-1.0.0.tgz"
   }
 }
 ```
 
-Then install and build:
+3. Install:
 
 ```bash
-# Install dependencies (including the local SDK)
 npm install
+```
 
-# Build the SDK
+This unpacks the pre-built SDK into `node_modules/fawry-softpos-sdk/dist/`.
+
+---
+
+## Build the .tgz from Source (for SDK developers)
+
+If you have the SDK source code, you can generate the `.tgz` yourself:
+
+```bash
 cd js-sdk
 npm install
-npm run build
+npm pack
 ```
+
+This runs the build automatically (via the `prepack` script) and produces `fawry-softpos-sdk-1.0.0.tgz` containing the `dist/` folder only.
 
 ---
 
@@ -98,6 +94,7 @@ After installation, your project should look like:
 
 ```
 your-website/
+├── fawry-softpos-sdk-1.0.0.tgz       ← SDK tarball
 ├── node_modules/
 │   └── fawry-softpos-sdk/
 │       └── dist/
