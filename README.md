@@ -1,0 +1,130 @@
+# Fawry SoftPOS Web SDK
+
+Integrate card payments into your website using the Fawry SoftPOS Android app. The Web SDK handles the communication between your website and the SoftPOS app via deep links, providing a seamless payment experience on Android devices.
+
+**[View Full Documentation](https://eslamwael74.github.io/fawry-soft-pos-web-sdk/)**
+
+## How It Works
+
+```
+┌───────────────┐     deep link      ┌────────────────┐     response       ┌──────────────┐
+│  Your Website │ ─────────────────▶ │  SoftPOS App   │ ────────────────▶ │ Callback Page│
+│  (SDK loaded) │                    │  (Android)     │                    │ (SDK loaded) │
+└──────┬────────┘                    └────────────────┘                    └──────┬───────┘
+       │                                                                          │
+       │  1. Build request                                               3. Parse result
+       │  2. Generate deep link                                          4. Store in localStorage
+       │                                                                 5. Original tab picks it up
+       ▼                                                                          ▼
+┌──────────────┐                                                           ┌───────────────┐
+│ Your Backend │  POST /api/generate-signature                             │ Payment Result│
+│ (signature)  │  ◀──── called before step 1                               │ (resolved)    │
+└──────────────┘                                                           └───────────────┘
+```
+
+1. Your website calls your **backend** to generate a signature.
+2. The SDK builds a `softpos://open/{operation}` deep link with the signed payload and redirects the browser.
+3. The SoftPOS Android app processes the request and redirects back to your **callback page**.
+4. The SDK on the callback page parses the response, stores it in `localStorage`, and the original tab resolves the Promise.
+
+## Supported Operations
+
+| Operation     | Description                         |
+|---------------|-------------------------------------|
+| Card Sale     | Accept a card payment               |
+| Card Refund   | Refund a previous transaction       |
+| Card Void     | Void/cancel a recent transaction    |
+| Inquiry       | Query the status of a transaction   |
+| Clear Cache   | Clear SoftPOS app cache and keys    |
+
+## Quick Start
+
+### 1. Install the SDK
+
+Add the `fawry-softpos-sdk-1.0.0.tgz` file to your project and update `package.json`:
+
+```json
+{
+  "dependencies": {
+    "fawry-softpos-sdk": "file:./fawry-softpos-sdk-1.0.0.tgz"
+  }
+}
+```
+
+```bash
+npm install
+```
+
+### 2. Load the SDK
+
+```html
+<script src="node_modules/fawry-softpos-sdk/dist/fawry-softpos-sdk.js"></script>
+```
+
+Or with a bundler:
+
+```javascript
+import FawrySDK from 'fawry-softpos-sdk';
+```
+
+### 3. Make a Payment
+
+```javascript
+var sid = FawrySDK.generateSessionId();
+var clientTimeStamp = Date.now();
+
+// Get a signature from your backend
+var response = await fetch('/api/generate-signature', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+        amount: '100.00',
+        merchantAccountNumber: 'YOUR_ACCOUNT_NUMBER',
+        orderId: 'ORDER-001',
+        sid: sid,
+        clientTimeStamp: clientTimeStamp,
+    }),
+});
+var data = await response.json();
+
+// Build and send the payment request
+var result = await FawrySDK.requestSale(FawrySDK.PaymentOptionType.CARD)
+    .setAmount(100.00)
+    .setCurrency('EGP')
+    .setSignature(data.signature)
+    .setSid(sid)
+    .setClientTimeStamp(clientTimeStamp)
+    .setPartnerCode('YOUR_PARTNER_CODE')
+    .setMerchantAccountNumber('YOUR_ACCOUNT_NUMBER')
+    .setOrderId('ORDER-001')
+    .send();
+
+if (result.isSuccess()) {
+    console.log('Payment successful!', result.body.fcrn);
+} else {
+    console.log('Payment failed:', result.header.status.statusDesc);
+}
+```
+
+## Requirements
+
+- Fawry merchant account with SoftPOS credentials (`merchantAccountNumber`, `partnerCode`, `merchantToken`)
+- Android device with the Fawry SoftPOS app installed
+- HTTPS-enabled website (use [ngrok](https://ngrok.com) for local development)
+- Node.js 16+ for the backend signature server
+
+## Documentation
+
+| Guide                                                                                              | Description                              |
+|----------------------------------------------------------------------------------------------------|------------------------------------------|
+| [Getting Started](https://eslamwael74.github.io/fawry-soft-pos-web-sdk/getting-started.html)       | Install and make your first payment      |
+| [Installation](https://eslamwael74.github.io/fawry-soft-pos-web-sdk/installation.html)             | Detailed setup instructions              |
+| [Backend Setup](https://eslamwael74.github.io/fawry-soft-pos-web-sdk/backend-setup.html)           | Server-side signature generation         |
+| [API Reference](https://eslamwael74.github.io/fawry-soft-pos-web-sdk/api-reference.html)           | Full SDK API documentation               |
+| [Operations](https://eslamwael74.github.io/fawry-soft-pos-web-sdk/operations/)                     | Sale, refund, void, inquiry, clear cache |
+| [Callback Handling](https://eslamwael74.github.io/fawry-soft-pos-web-sdk/callback-handling.html)   | Handle payment results                   |
+| [Troubleshooting](https://eslamwael74.github.io/fawry-soft-pos-web-sdk/troubleshooting.html)       | Common issues and fixes                  |
+
+## License
+
+Copyright Fawry Payment Solutions. All rights reserved.
