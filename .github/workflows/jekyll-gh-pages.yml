@@ -1,4 +1,4 @@
-name: Deploy Jekyll site to GitHub Pages
+name: Deploy fawry-soft-pos-web-sdk-docs with Jekyll site to GitHub Pages
 
 on:
   push:
