@@ -181,14 +181,6 @@ Created via `FawrySDK.requestSale(PaymentOptionType.CARD)`.
 | `.setAmount(value)` | `string` | **Yes** | Payment amount (use the **same string** as for signature generation) |
 | `.setCurrency(value)` | `string` | No | Currency code (default: `'EGP'` if omitted) |
 | `.setOrderId(value)` | `string` | No | Your order/reference ID |
-| `.setTips(value)` | `number` | No | Tips amount |
-| `.setPromoCode(value)` | `string` | No | Promotional code |
-| `.setReceiptNumber(value)` | `string` | No | Receipt number |
-| `.setSplitPayment(value)` | `boolean` | No | Enable split payment |
-| `.setChainUID(value)` | `string` | No | Chain UID for split payments |
-| `.setDiscountInfo(value)` | `object` | No | Discount details |
-| `.setInstallmentInfo(value)` | `object` | No | Installment plan details |
-| `.setMetadata(value)` | `object` | No | Custom metadata key-value pairs |
 
 ---
 
@@ -203,8 +195,6 @@ Created via `FawrySDK.requestRefund(PaymentOptionType.CARD)`.
 | `.setAmount(value)` | `string` | **Yes** | Refund amount (same string as for signature) |
 | `.setTransactionFCRN(value)` | `string` | No | Original transaction FCRN |
 | `.setOrderId(value)` | `string` | No | Order/reference ID |
-| `.setSplitPayment(value)` | `boolean` | No | Enable split payment |
-| `.setChainUID(value)` | `string` | No | Chain UID for split payments |
 
 ---
 
@@ -218,8 +208,6 @@ Created via `FawrySDK.requestVoid(PaymentOptionType.CARD)`.
 |--------|------|----------|-------------|
 | `.setTransactionFCRN(value)` | `string` | No | Original transaction FCRN |
 | `.setOrderId(value)` | `string` | No | Order/reference ID |
-| `.setSplitPayment(value)` | `boolean` | No | Enable split payment |
-| `.setChainUID(value)` | `string` | No | Chain UID for split payments |
 
 ---
 

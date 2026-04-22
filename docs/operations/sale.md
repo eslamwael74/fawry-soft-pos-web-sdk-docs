@@ -82,11 +82,6 @@ var result = await FawrySDK.requestSale(FawrySDK.PaymentOptionType.CARD)
     .setPrintReceipt(true)
     .setDisplayInvoice(true)
     .setOrderId('ORD-67890')
-    .setTips(10.00)
-    .setPromoCode('PROMO2024')
-    .setReceiptNumber('REC-001')
-    .setSplitPayment(false)
-    .setMetadata({ customField: 'value' })
     .setExtras({ note: 'VIP customer' })
     .send();
 ```

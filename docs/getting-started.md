@@ -196,6 +196,6 @@ The SDK sends `POST` requests with JSON body `{ message, data }` to that URL.
 ## Next Steps
 
 - Read the [API Reference]({% link api-reference.md %}) for the full list of builder methods
-- See [Card Sale]({% link operations/sale.md %}) for all sale-specific options (tips, promo codes, installments)
+- See [Card Sale]({% link operations/sale.md %}) for the supported sale flow
 - Set up [Card Refund]({% link operations/refund.md %}) and [Card Void]({% link operations/void.md %}) flows
 - Review the [Troubleshooting]({% link troubleshooting.md %}) guide for common issues

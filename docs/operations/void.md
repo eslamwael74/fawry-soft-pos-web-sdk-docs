@@ -10,6 +10,8 @@ Void (cancel) a recently completed card transaction. Voids are typically availab
 
 > **Signature inputs:** Void signatures must include `operationType: 'void'` and `transactionFCRN` in the backend request body. Void signatures do not include an amount, but they still include `orderId` in part 2 when you provide one.
 
+> **Do not remap fields:** `transactionFCRN` is the void `referenceNumber`. If `orderId` is blank, leave it blank in the backend request so the signature logic uses an empty amount and `"null"` for the order-id portion of part 2.
+
 ---
 
 ## Example
@@ -61,8 +63,6 @@ try {
 |-----------|--------|----------|-------------|
 | Transaction FCRN | `setTransactionFCRN()` | No | FCRN of the transaction to void |
 | Order ID | `setOrderId()` | No | Order/reference ID |
-| Split Payment | `setSplitPayment()` | No | Enable split payment void |
-| Chain UID | `setChainUID()` | No | Chain UID for split payments |
 
 Plus all [common builder methods]({% link api-reference.md %}#common-methods-all-builders) (signature, sid, timestamp, `setBtc`, optional `setPrintReceipt` / `setDisplayInvoice` — default `false`, etc.).
 

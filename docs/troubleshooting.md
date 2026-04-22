@@ -93,6 +93,8 @@ Common issues and their solutions.
 - For refund and void, make sure the signature request includes `transactionFCRN`.
 - For inquiry, make sure the signature request includes both `transactionId` and `idType`.
 - If you use `orderId`, send the same value to both your backend signature request and the SDK builder.
+- Do not copy `transactionFCRN` or `transactionId` into `orderId` when `orderId` is blank.
+- For void and inquiry, make sure missing optional values are treated as empty string, not the literal `"undefined"` or `"null"`.
 
 ---
 

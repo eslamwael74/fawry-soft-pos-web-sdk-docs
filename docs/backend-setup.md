@@ -45,6 +45,13 @@ The backend must derive `amount`, `referenceNumber`, and `orderIdOrNull` the sam
 | `void` | `""` | `transactionFCRN` | request `orderId` or `"null"` |
 | `inquiry` | `""` | `transactionId` | `transactionId` only when `idType = ORDER_ID`, otherwise `"null"` |
 
+### Important edge cases
+
+- For `void` and `inquiry`, do **not** send `amount: "undefined"` or `amount: "null"` from the client. If there is no amount for the operation, the backend should treat it as an empty string.
+- For `refund` and `void`, `transactionFCRN` is the `referenceNumber`. If `orderId` is empty, keep `orderId` empty and let part 2 use the literal string `"null"`. Do **not** copy `transactionFCRN` into `orderId`.
+- For `inquiry`, `transactionId` is the `referenceNumber`. Only use `transactionId` as `orderId` in part 2 when `idType = ORDER_ID`.
+- If the client accidentally sends literal strings such as `"undefined"` or `"null"` for optional fields, normalize them to empty string before hashing.
+
 ---
 
 ## Node.js (signature steps)
@@ -61,7 +68,11 @@ function hash256(message) {
 }
 
 function toOptionalString(value) {
-    return value == null ? '' : String(value);
+    if (value == null) return '';
+    const stringValue = String(value);
+    return stringValue === '' || stringValue === 'undefined' || stringValue === 'null'
+        ? ''
+        : stringValue;
 }
 
 function toOrderIdSignaturePart(orderId) {
@@ -225,7 +236,10 @@ def hash256(message: str) -> str:
 
 
 def _to_optional_string(value) -> str:
-    return "" if value is None else (value if isinstance(value, str) else str(value))
+    if value is None:
+        return ""
+    string_value = value if isinstance(value, str) else str(value)
+    return "" if string_value in ("", "undefined", "null") else string_value
 
 
 def _to_order_id_signature_part(order_id) -> str:

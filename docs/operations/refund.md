@@ -12,6 +12,8 @@ Refund a previously completed card transaction.
 
 > **Signature inputs:** Refund signatures must include `operationType: 'refund'` and `transactionFCRN` in the backend request body. If you use `orderId`, send that too so part 2 matches the mobile validator.
 
+> **Do not remap fields:** `transactionFCRN` is the refund `referenceNumber`. If `orderId` is blank, leave it blank in the backend request and let the signature logic use `"null"` for the order-id portion of part 2.
+
 ---
 
 ## Example
@@ -67,8 +69,6 @@ try {
 | Amount | `setAmount()` | **Yes** | Refund amount as a **string** (same as for signature) |
 | Transaction FCRN | `setTransactionFCRN()` | No | FCRN of the original transaction |
 | Order ID | `setOrderId()` | No | Order/reference ID |
-| Split Payment | `setSplitPayment()` | No | Enable split payment refund |
-| Chain UID | `setChainUID()` | No | Chain UID for split payments |
 
 Plus all [common builder methods]({% link api-reference.md %}#common-methods-all-builders) (signature, sid, timestamp, `setBtc`, optional `setPrintReceipt` / `setDisplayInvoice` — default `false`, etc.).
 

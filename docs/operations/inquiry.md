@@ -10,6 +10,8 @@ Query the status of a previous transaction by its ID.
 
 > **Signature inputs:** Inquiry signatures must include `operationType: 'inquiry'`, `transactionId`, and `idType` in the backend request body. When `idType` is `ORDER_ID`, the mobile validator also injects `transactionId` into part 2 as the order ID; otherwise part 2 uses the literal string `"null"`.
 
+> **Empty amount:** Inquiry signatures always use an empty amount string. If the client sends literal `"undefined"` or `"null"` for optional fields, normalize them to empty string before hashing.
+
 ---
 
 ## Example
