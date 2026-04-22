@@ -162,6 +162,12 @@ These methods are available on every builder:
 | `.setExtras(value)` | `object` | No | Extra info key-value pairs |
 | `.send()` | -- | -- | Execute the request. Returns `Promise<PaymentResult>` |
 
+Backend signature generation must use the same operation-specific values you set on the builder. In particular:
+- sale uses `amount` and optional `orderId`
+- refund uses `amount`, `transactionFCRN`, and optional `orderId`
+- void uses `transactionFCRN` and optional `orderId`
+- inquiry uses `transactionId` and `idType`
+
 ---
 
 ### CardSaleBuilder

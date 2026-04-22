@@ -10,6 +10,8 @@ Refund a previously completed card transaction.
 
 > **Amount:** For refunds, the same rule applies as for [Card Sale]({% link operations/sale.md %}): use a **string** for `amount` so the value sent to your signature API uses the **exact same characters** (including decimal places and fractional padding) as `setAmount()`. That way the computed signature matches the refund payload built by the SDK.
 
+> **Signature inputs:** Refund signatures must include `operationType: 'refund'` and `transactionFCRN` in the backend request body. If you use `orderId`, send that too so part 2 matches the mobile validator.
+
 ---
 
 ## Example
@@ -24,7 +26,10 @@ var sigResponse = await fetch('/api/generate-signature', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
+        operationType: 'refund',
         amount: amountStr,
+        transactionFCRN: 'ORIGINAL_FCRN_HERE',
+        orderId: 'REFUND-ORDER-001',
         merchantAccountNumber: 'YOUR_ACCOUNT_NUMBER',
         sid: sid,
         clientTimeStamp: clientTimeStamp,
@@ -36,6 +41,7 @@ try {
     var result = await FawrySDK.requestRefund(FawrySDK.PaymentOptionType.CARD)
         .setAmount(amountStr)
         .setTransactionFCRN('ORIGINAL_FCRN_HERE')
+        .setOrderId('REFUND-ORDER-001')
         .setSignature(sigData.signature)
         .setSid(sid)
         .setClientTimeStamp(clientTimeStamp)
@@ -113,4 +119,5 @@ Plus all [common builder methods]({% link api-reference.md %}#common-methods-all
 
 - The refund amount should match or be less than the original transaction amount.
 - Use the `transactionFCRN` from the original sale's `result.body.fcrn` to link the refund to the correct transaction.
+- The backend signature request must use the same `transactionFCRN` and `orderId` values you set on the builder.
 - Use the bill type code (`setBtc`) required by Fawry for your refund flow (example value `99902` is illustrative only).

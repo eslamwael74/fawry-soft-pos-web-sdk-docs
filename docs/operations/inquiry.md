@@ -8,6 +8,8 @@ nav_order: 4
 
 Query the status of a previous transaction by its ID.
 
+> **Signature inputs:** Inquiry signatures must include `operationType: 'inquiry'`, `transactionId`, and `idType` in the backend request body. When `idType` is `ORDER_ID`, the mobile validator also injects `transactionId` into part 2 as the order ID; otherwise part 2 uses the literal string `"null"`.
+
 ---
 
 ## Example
@@ -20,6 +22,9 @@ var sigResponse = await fetch('/api/generate-signature', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
+        operationType: 'inquiry',
+        transactionId: 'THE_FCRN_TO_LOOKUP',
+        idType: FawrySDK.IdType.FCRN,
         merchantAccountNumber: 'YOUR_ACCOUNT_NUMBER',
         sid: sid,
         clientTimeStamp: clientTimeStamp,
@@ -71,6 +76,8 @@ Use `FawrySDK.IdType` to specify how to look up the transaction:
 | `IdType.FCRN` | `'FCRN'` | Look up by Fawry Cash Register Number |
 | `IdType.CORRUID` | `'CORRUID'` | Look up by Correlation UUID |
 | `IdType.ORDER_ID` | `'ORDER_ID'` | Look up by your order ID |
+
+Use the same `transactionId` and `idType` in both the backend signature request and the SDK builder.
 
 ```javascript
 // Look up by FCRN

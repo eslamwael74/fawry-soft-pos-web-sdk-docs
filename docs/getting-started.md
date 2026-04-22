@@ -56,6 +56,7 @@ app.post('/api/generate-signature', (req, res) => {
     const { amount, merchantAccountNumber, orderId, sid, clientTimeStamp } = req.body;
 
     const result = generatePaymentSignature({
+        operationType: 'purchase',
         amount: String(amount),
         merchantAccountNumber,
         orderId,
@@ -102,6 +103,7 @@ var response = await fetch('/api/generate-signature', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
+        operationType: 'purchase',
         amount: amountStr,
         merchantAccountNumber: 'YOUR_ACCOUNT_NUMBER',
         orderId: 'ORDER-001',
@@ -110,6 +112,9 @@ var response = await fetch('/api/generate-signature', {
     }),
 });
 var data = await response.json();
+
+// For refund, void, and inquiry operations, also send the operation-specific
+// signature fields such as transactionFCRN, transactionId, and idType.
 
 // 3. Build and send the payment request
 var result = await FawrySDK.requestSale(FawrySDK.PaymentOptionType.CARD)

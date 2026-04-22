@@ -90,6 +90,9 @@ Common issues and their solutions.
 - Ensure your backend `/api/generate-signature` endpoint is running and reachable.
 - Check the network tab for errors on the signature request.
 - Verify the response format is `{ "signature": "..." }`.
+- For refund and void, make sure the signature request includes `transactionFCRN`.
+- For inquiry, make sure the signature request includes both `transactionId` and `idType`.
+- If you use `orderId`, send the same value to both your backend signature request and the SDK builder.
 
 ---
 

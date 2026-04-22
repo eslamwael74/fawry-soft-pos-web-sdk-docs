@@ -8,6 +8,8 @@ nav_order: 3
 
 Void (cancel) a recently completed card transaction. Voids are typically available only within the same batch/settlement period.
 
+> **Signature inputs:** Void signatures must include `operationType: 'void'` and `transactionFCRN` in the backend request body. Void signatures do not include an amount, but they still include `orderId` in part 2 when you provide one.
+
 ---
 
 ## Example
@@ -21,6 +23,9 @@ var sigResponse = await fetch('/api/generate-signature', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
+        operationType: 'void',
+        transactionFCRN: 'ORIGINAL_FCRN_HERE',
+        orderId: 'VOID-ORDER-001',
         merchantAccountNumber: 'YOUR_ACCOUNT_NUMBER',
         sid: sid,
         clientTimeStamp: clientTimeStamp,
@@ -31,6 +36,7 @@ var sigData = await sigResponse.json();
 try {
     var result = await FawrySDK.requestVoid(FawrySDK.PaymentOptionType.CARD)
         .setTransactionFCRN('ORIGINAL_FCRN_HERE')
+        .setOrderId('VOID-ORDER-001')
         .setSignature(sigData.signature)
         .setSid(sid)
         .setClientTimeStamp(clientTimeStamp)
@@ -59,6 +65,8 @@ try {
 | Chain UID | `setChainUID()` | No | Chain UID for split payments |
 
 Plus all [common builder methods]({% link api-reference.md %}#common-methods-all-builders) (signature, sid, timestamp, `setBtc`, optional `setPrintReceipt` / `setDisplayInvoice` — default `false`, etc.).
+
+When generating the signature on your backend, pass the same `transactionFCRN` and `orderId` values used in the builder request.
 
 ---
 

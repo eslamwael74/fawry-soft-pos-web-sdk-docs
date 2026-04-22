@@ -2,7 +2,7 @@
 
 Integrate card payments into your website using the Fawry SoftPOS Android app. The Web SDK handles the communication between your website and the SoftPOS app via deep links, providing a seamless payment experience on Android devices.
 
-**[View Full Documentation](https://eslamwael74.github.io/fawry-soft-pos-web-sdk/)**
+**[View Full Documentation](https://eslamwael74.github.io/fawry-soft-pos-web-sdk-docs/)**
 
 ## How It Works
 
@@ -78,6 +78,7 @@ var response = await fetch('/api/generate-signature', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
+        operationType: 'purchase',
         amount: '100.00',
         merchantAccountNumber: 'YOUR_ACCOUNT_NUMBER',
         orderId: 'ORDER-001',
@@ -89,7 +90,7 @@ var data = await response.json();
 
 // Build and send the payment request
 var result = await FawrySDK.requestSale(FawrySDK.PaymentOptionType.CARD)
-    .setAmount(100.00)
+    .setAmount('100.00')
     .setCurrency('EGP')
     .setSignature(data.signature)
     .setSid(sid)
@@ -97,6 +98,7 @@ var result = await FawrySDK.requestSale(FawrySDK.PaymentOptionType.CARD)
     .setPartnerCode('YOUR_PARTNER_CODE')
     .setMerchantAccountNumber('YOUR_ACCOUNT_NUMBER')
     .setOrderId('ORDER-001')
+    .setBtc(99901)
     .send();
 
 if (result.isSuccess()) {
@@ -105,6 +107,8 @@ if (result.isSuccess()) {
     console.log('Payment failed:', result.header.status.statusDesc);
 }
 ```
+
+For refund, void, and inquiry operations, send the operation-specific signature fields to your backend as well: `transactionFCRN` for refund/void, and `transactionId` plus `idType` for inquiry.
 
 ## Requirements
 
@@ -117,13 +121,13 @@ if (result.isSuccess()) {
 
 | Guide                                                                                              | Description                              |
 |----------------------------------------------------------------------------------------------------|------------------------------------------|
-| [Getting Started](https://eslamwael74.github.io/fawry-soft-pos-web-sdk/getting-started.html)       | Install and make your first payment      |
-| [Installation](https://eslamwael74.github.io/fawry-soft-pos-web-sdk/installation.html)             | Detailed setup instructions              |
-| [Backend Setup](https://eslamwael74.github.io/fawry-soft-pos-web-sdk/backend-setup.html)           | Server-side signature generation         |
-| [API Reference](https://eslamwael74.github.io/fawry-soft-pos-web-sdk/api-reference.html)           | Full SDK API documentation               |
-| [Operations](https://eslamwael74.github.io/fawry-soft-pos-web-sdk/operations/)                     | Sale, refund, void, inquiry, clear cache |
-| [Callback Handling](https://eslamwael74.github.io/fawry-soft-pos-web-sdk/callback-handling.html)   | Handle payment results                   |
-| [Troubleshooting](https://eslamwael74.github.io/fawry-soft-pos-web-sdk/troubleshooting.html)       | Common issues and fixes                  |
+| [Getting Started](https://eslamwael74.github.io/fawry-soft-pos-web-sdk-docs/getting-started.html)       | Install and make your first payment      |
+| [Installation](https://eslamwael74.github.io/fawry-soft-pos-web-sdk-docs/installation.html)             | Detailed setup instructions              |
+| [Backend Setup](https://eslamwael74.github.io/fawry-soft-pos-web-sdk-docs/backend-setup.html)           | Server-side signature generation         |
+| [API Reference](https://eslamwael74.github.io/fawry-soft-pos-web-sdk-docs/api-reference.html)           | Full SDK API documentation               |
+| [Operations](https://eslamwael74.github.io/fawry-soft-pos-web-sdk-docs/operations/)                     | Sale, refund, void, inquiry, clear cache |
+| [Callback Handling](https://eslamwael74.github.io/fawry-soft-pos-web-sdk-docs/callback-handling.html)   | Handle payment results                   |
+| [Troubleshooting](https://eslamwael74.github.io/fawry-soft-pos-web-sdk-docs/troubleshooting.html)       | Common issues and fixes                  |
 
 ## License
 

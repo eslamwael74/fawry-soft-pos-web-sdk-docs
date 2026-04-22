@@ -10,6 +10,8 @@ Accept a card payment through the SoftPOS app.
 
 > **Amount and signature:** The goal of using a **string** for the amount is to keep the **same decimal representation** everywhere—how many fractional digits you use and how they are padded (for example `'100.00'` vs `'100.0'` vs `100`)—because the backend builds the signature from **plain string concatenation**. If the characters differ from what `setAmount()` puts in the deep link, the hash will not match. Pass the payment amount as a string (for example `'150.00'`) to `setAmount()`, and use the **identical string** in the JSON body for signature generation. Avoid passing a JavaScript number when the string form could differ after formatting.
 
+> **Signature inputs:** Sale signatures may omit `operationType` because the backend defaults to `purchase`, but sending `operationType: 'purchase'` is recommended for clarity. For sale, `referenceNumber` is empty and `orderId` is only used in part 2.
+
 > **Currency:** `setCurrency()` is optional. If you omit it, the SDK sends **`EGP`** as the currency in the payment payload.
 
 ---
@@ -27,6 +29,7 @@ var sigResponse = await fetch('/api/generate-signature', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
+        operationType: 'purchase',
         amount: amountStr,
         merchantAccountNumber: 'YOUR_ACCOUNT_NUMBER',
         orderId: 'ORD-12345',
