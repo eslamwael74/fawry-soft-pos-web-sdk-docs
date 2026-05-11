@@ -32,20 +32,6 @@ This unpacks the pre-built SDK into `node_modules/fawry-softpos-sdk/dist/`.
 
 ---
 
-## Build the .tgz from Source (for SDK developers)
-
-If you have the SDK source code, you can generate the `.tgz` yourself:
-
-```bash
-cd js-sdk
-npm install
-npm pack
-```
-
-This runs the build automatically (via the `prepack` script) and produces `fawry-softpos-sdk-1.0.0.tgz` containing the `dist/` folder only.
-
----
-
 ## Loading the SDK
 
 ### Script Tag (recommended for most integrations)
